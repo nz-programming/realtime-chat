@@ -570,7 +570,24 @@ $('#login-form').on('submit', (e) => {
   const password = $('#login-password').val();
 
   // TODO: ログインを試みて該当ユーザが存在しない場合は新規作成する
-
+  //まずはログインを試みる
+  firebase
+   .auth()
+   .signInWithEmailAndPassword(email, password)
+   .catch((error) => {
+     console.log('ログイン失敗：', error);
+     if (error.code === 'auth/user-not-found'){
+       firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          console.log('ユーザを作成しました');
+        })
+        .catch(catchErrorOnCreateUser);
+      } else {
+        catchErrorOnSignIn(error);
+      }
+    });
 });
 
 // ログアウトがクリックされたらログアウトする
@@ -610,6 +627,16 @@ $('#comment-form').on('submit', (e) => {
   commentForm.val('');
 
   // TODO: メッセージを投稿する
+  const message = {
+    uid: currentUID,
+    text: comment,
+    time: firebase.database.ServerValue.TIMESTAMP,
+  };
+
+  firebase
+    .database()
+    .ref(`messages/${currentRoomName}`)
+    .push(message);
 
 });
 
