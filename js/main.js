@@ -303,9 +303,16 @@ const deleteRoom = (roomName) => {
   }
 
   // TODO: ルームを削除
+  firebase
+    .database()
+    .ref(`rooms/${roomName}`)
+    .remove();
 
   // TODO: ルーム内のメッセージも削除
-
+  firebase
+    .database()
+    .ref(`messages/${roomName}`)
+    .remove();
 };
 
 // チャット画面の初期化処理
@@ -699,6 +706,15 @@ $('#create-room-form').on('submit', (e) => {
   }
 
   // TODO (A): ルーム作成処理
+  firebase
+    .database()
+    .ref(`rooms/${roomName}`)
+    .setWithPriority(
+      {
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        createdByUID: currentUID,
+      },
+      2,
 
   /**
    * TODO (B): ルーム作成に成功した場合は下記2つの処理を実行する
@@ -709,6 +725,17 @@ $('#create-room-form').on('submit', (e) => {
    * 作成したルームを表示
    * changeLocationHash(roomName);
    */
+
+    )
+    .then(() => {
+      $("#createRoomModal").modal("toggle");
+      changeLocationHash(roomName);
+    })
+    .catch((error) => {
+      console.error('ルーム作成に失敗：', error);
+    });
+
+
 });
 
 /**
